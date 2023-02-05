@@ -36,7 +36,7 @@ W efekcie system Git ma możliwość natychmiastowego dostępu do dowolnej wersj
 
 # Struktura rewizji
 
-**Identyfikator**. Rewizja jest jest unikalnie identyfikowana 40 znakowym kodem SHA-1 (20 bajtów zapisanych heksadecymalnie). Unikalność identyfikatora rewizji jest zapewniona nie tylko w ramach lokalnego repozytorium, ale również globalnie w ramach wielu repozytoriów. Dla łatwiejszego odwoływania się do rewizji w praktyce stosuje się 7-znakowy skrót (pierwsze 7 znaków z 40 znakowego skrótu SHA-1).
+**Identyfikator**. Rewizja jest jest unikalne identyfikowana 40 znakowym kodem SHA-1 (20 bajtów w zapisie heksadecymalnym). Unikalność identyfikatora rewizji jest zapewniona nie tylko w ramach lokalnego repozytorium, ale również globalnie w ramach wielu repozytoriów. Dla łatwiejszego odwoływania się do rewizji w praktyce stosuje się 7-znakowy skrót (pierwsze 7 znaków z 40 znakowego skrótu SHA-1).
 
 ![Repozytorium Git](./resources-gl/git01-repozytorium.png)
 
@@ -297,12 +297,12 @@ Kolejne przełączenie się na gałąź ```master```, spowoduje, że w plikach r
 git checkout master
 ```
 
-Głowa zostaje przełączona na gałąź ```master```, a pliki znajdujące się katalogu roboczym zostana zmodyfikowane tak, aby wyglądały tak jak wcześniej, czyli przed wprowadzoną zmianą. Jednak zmiany nie znikają na stałe, ponieważ są już utrwalone w repozytorium i każdej chwili można się na nie przełączyć wywołując polecenie ```git checkout poprawka59```
+Głowa zostaje przełączona na gałąź ```master```, a pliki znajdujące się katalogu roboczym zostaną zmodyfikowane tak, aby wyglądały tak jak wcześniej, czyli przed wprowadzoną zmianą. Jednak zmiany nie znikają na stałe, ponieważ są już utrwalone w repozytorium i każdej chwili można się na nie przełączyć wywołując polecenie ```git checkout poprawka59```
 
-Polecenie ```git checkout``` pozwala przełączyć ```HEAD``` na dowolną rewizję w repozytorium (nie tylko na którąś z gałęzi). W tym celu musimy znać identyfikator wersji lub jego skróconą wersję (7 znaków). Patrząc na przykłady podane wcześniej widać, że jedna z wcześniejszych rewizji identyfikowana jest skrótem: ```81ae807```. Przełączając się w takie miejsce powinniśmy równocześnie utworzyć nową gałąź w tym miejscu, aby nie otrzymać tzw. odczepionej głowy. Do utworznia nowej gałęzi służy opcja ```-b```:
+Polecenie ```git checkout``` pozwala przełączyć ```HEAD``` na dowolną rewizję w repozytorium (nie tylko na którąś z gałęzi). W tym celu musimy znać identyfikator wersji lub jego skróconą wersję (7 znaków). Patrząc na przykłady podane wcześniej widać, że jedna z wcześniejszych rewizji identyfikowana jest skrótem: ```81ae807```. Przełączając się w takie miejsce powinniśmy równocześnie utworzyć nową gałąź w tym miejscu, aby nie otrzymać tzw. odczepionej głowy. Do utworzenia nowej gałęzi służy opcja ```-b```:
 
 ```
-git checkout b8f9e20 -b eksperymencik
+git checkout b8f9e20 -b eksperyment
 ```
 
 Jeśli gałąź może już istnieć to trzeba ją przestawić na bieżące czyli zresetować. Można to zrobić przy pomocy opcji ```-B```. Tak jak w przykładzie:
@@ -344,7 +344,7 @@ Polecenie ```git merge``` informuje system o potrzebie scalenia aktualnej pozycj
 git merge poprawka59
 ```
 
-Wróćmy do opisanej wcześniej i rozrysowanej na diagramie sytuacji. Znajdujemy się na gałęzi ```master```, którą próbujemy scalić z gałezią ```poprawka59```. Po wydaniu powyższego polecenia, system najpierw odszuka ***wspólnego przodka*** i ustali, że doszło do rozgałęzienia. Również ustalone zostaną zmiany wprowadzone w obu gałęziach, czyli mamy 3 wersje zaangażowane w proces scalania (oznaczone na żółto na powyższym diagramie). Po weryfikacji różnić w tych trzech miejscach system ustali czy scalenie może zostać wykonane automatycznie. 
+Wróćmy do opisanej wcześniej i rozrysowanej na diagramie sytuacji. Znajdujemy się na gałęzi ```master```, którą próbujemy scalić z gałęzią ```poprawka59```. Po wydaniu powyższego polecenia, system najpierw odszuka ***wspólnego przodka*** i ustali, że doszło do rozgałęzienia. Również ustalone zostaną zmiany wprowadzone w obu gałęziach, czyli mamy 3 wersje zaangażowane w proces scalania (oznaczone na żółto na powyższym diagramie). Po weryfikacji różnić w tych trzech miejscach system ustali czy scalenie może zostać wykonane automatycznie. 
 
 Jeśli zmienianie były różne pliki w obu gałęziach to łatwo można złączyć wszystkie zmiany. Również jeśli obie gałęzie zmieniały ten sam plik, ale w różnych miejscach (różnych liniach) to również można połączyć wszystkie zmiany automatycznie. Jednak jeśli w obu gałęziach zmieniono tą samą linie to wtedy mamy konflikt, który musi rozstrzygnąć użytkownik.
 
@@ -372,7 +372,7 @@ Nie jest to zalecany stan i raczej powinno się unikać sytuacji gdy głowa nie 
 
 Już wspomniałem wcześniej jak są aktualizowane pozycje wskaźników zdalnych, 
 
-Pozycje gałęzi zdalnych są aktualizowane w zdalnym repozytorium w momencie wysyłania tam zmian, czyli podczas operacji ```git push```. W takiej sytuacji pozycja gałęzi zdalnej jest aktualizowana zgodnie z pozycją gałęzi lokalnej, pod warunkiem, że nie ma konfliktów z aktualną pozycją tej gałęzi na serwerze. Jeśli taki konflikt wystepuje to cała operacja jest uznawana za niebezpieczną i system odmawia jej wykonania. Gdy chcemy ją wykonać mimo wszystko to trzeba ją wymusić opcją ```-f```, tak jak w przykładzie:
+Pozycje gałęzi zdalnych są aktualizowane w zdalnym repozytorium w momencie wysyłania tam zmian, czyli podczas operacji ```git push```. W takiej sytuacji pozycja gałęzi zdalnej jest aktualizowana zgodnie z pozycją gałęzi lokalnej, pod warunkiem, że nie ma konfliktów z aktualną pozycją tej gałęzi na serwerze. Jeśli taki konflikt występuje to cała operacja jest uznawana za niebezpieczną i system odmawia jej wykonania. Gdy chcemy ją wykonać mimo wszystko to trzeba ją wymusić opcją ```-f```, tak jak w przykładzie:
 
 ```
 git push -f origin master
@@ -420,7 +420,7 @@ Angielski opis z dokumentacji ```fetch --prune```
 Tworzenie gałęzi lokalnej na bazie gałęzi zdalnej
 
 ```
-git checkout --track origin/poprwka61
+git checkout --track origin/poprawka61
 ```
 
 

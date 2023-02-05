@@ -1,4 +1,4 @@
-﻿# Rozgrzewka
+﻿# Git Rozgrzewka
 
 ## Konfiguracja Git-a
 
@@ -62,20 +62,3 @@
 
 * Fork - https://git-fork.com/
 * wiele innych możliwości ... [artykuł](./GitGuiClients.md)
-
-## Zadanie
-
-> Dopisanie swoich danych ( imię i nazwisko oraz nick z GitHub-a )
-
----
-
-* A: Rafał Pitlok / RafalPitlok
-* B: Rafał Wodok / Extermi111
-* C: Grzegorz Najduch / gery77n
-* D: Nina Czaplicka / NinaCzaplicka
-* E: Małgorzata Hetman / mhetman
-* F: Marcin Kajtoch / marcinkajtoch
-* G: Paweł Kantor / laki94
-* Trener: Bogdan Polak
-
----

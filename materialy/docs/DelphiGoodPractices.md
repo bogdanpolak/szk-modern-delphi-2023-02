@@ -74,7 +74,7 @@ DRY - `Don't Repeat Yourself`
 	* Małe i czytelne metody / funkcje
 * Programowanie obiektowe
 	*  Staraj się nie pisać samodzielnych funkcji i procedur 
-* Zapachy kodu - kod śmierdzący (stęchniały)
+* Zapachy kodu - kod śmierdzący (zatęchły)
 	* Naucz się rozpoznawać zapachy kodu: kiedy śmierdzi, a kiedy ma miły zapach.
 	* Kreatywność i poznawanie nowych technik
 		* Nie programuj ciągle w ten sam sposób. Ucz się i eksperymentuj z nowymi sposobami kodowania.
@@ -114,7 +114,7 @@ DRY - `Don't Repeat Yourself`
             ItemPrice: TBcd;
         begin
             if discount>1 then
-                raise EPosSystemException.Create(StrPosInvalidDiscoun);
+                raise EPosSystemException.Create(StrPosInvalidDiscount);
             ListPrice := FDQuery2.FieldByName('ProductPrice').AsBCD;
             Data.FmtBcd.BcdMultiply(ListPrice, DoubleToBcd(1-discount), ItemPrice);
             Data.FmtBcd.NormalizeBcd(ItemPrice, ItemPrice, 16, 2);
@@ -151,7 +151,7 @@ DRY - `Don't Repeat Yourself`
 
 ## 6. Architektura - Separacja warstw - model MVC
 
-* MVC = `Model View Controler`
+* MVC = `Model View Controller`
 * Unikaj kodu spaghetti
     * Nie mieszaj manipulacji na danych lub realizacji logiki systemu w event-ach.
     * `OnClick Developer`

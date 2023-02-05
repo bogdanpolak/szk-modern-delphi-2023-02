@@ -37,9 +37,9 @@
     * Instrukcje switch
     * Korzystanie z nazw opisowych
     * Argumenty funkcji
-    * Często stosowane funkcje jednoargumentowe
+    * Często stosowane funkcje jedno-argumentowe
     * Funkcje dwuargumentowe
-    * Funkcje trzyargumentowe
+    * Funkcje trzy-argumentowe
     * Argumenty obiektowe (OK)
     * Listy argumentów
     * Czasowniki i słowa kluczowe
