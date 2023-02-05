@@ -10,7 +10,12 @@ uses
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ExtCtrls,
   {-}
-  DemoHelper;
+  DemoHelper,
+  QueueForm,
+  Exercises.Generics,
+  Exercises.Anonymous,
+  Exercises.Spring4D.Collections,
+  Exercises.Spring4D.Base;
 
 type
   TFormDemoMain = class(TForm)
@@ -24,7 +29,6 @@ type
     btnDemoWeatherDictionary: TButton;
     btnRunTEnumDemo: TButton;
     btnNullableDemo: TButton;
-    btnTupleTupleDemo: TButton;
     Panel1: TPanel;
     Panel2: TPanel;
     Panel3: TPanel;
@@ -53,85 +57,77 @@ implementation
 
 {$R *.dfm}
 
-{ Generics Demos }
-
-procedure TFormDemoMain.btnDemoThreadedQueueClick(Sender: TObject);
-begin
-  // TODO: G #1
-end;
-
-procedure TFormDemoMain.btnDemoSuperObjectClick(Sender: TObject);
-begin
-  Console.Writeln('--- Super Object --------------------------------');
-  // TODO: G #2
-  Console.Writeln('');
-end;
-
-procedure TFormDemoMain.btnDemoObjectContainerClick(Sender: TObject);
-begin
-  Console.Writeln('--- Object Container ----------------------------');
-  // TODO: G #3
-  Console.Writeln('');
-end;
-
-{ Anonymous Methods Demos }
-
 procedure TFormDemoMain.btnDemoAnonymousThreadClick(Sender: TObject);
 begin
   Console.Writeln('--- Anonymous Thread ----------------------------');
-  // TODO: A #1
+  TAnonymousDemo.RunAnonymousThread(Console);
 end;
 
 procedure TFormDemoMain.btnDemoDataSetForEachClick(Sender: TObject);
 begin
   Console.Writeln('--- DataSet For Each Row ------------------------');
-  // TODO: A #2
+  TAnonymousDemo.RunDataSetForEach(Console, Self);
   Console.Writeln('');
 end;
-
-{ Spring Collections Demos }
 
 procedure TFormDemoMain.btnDemoEmployeeCollectionClick(Sender: TObject);
 begin
   Console.Writeln('--- Employee Collection -------------------------');
-  // TODO: SC #1
-  Console.Writeln('');
-end;
-
-procedure TFormDemoMain.btnDemoWeatherDictionaryClick(Sender: TObject);
-begin
-  Console.Writeln('--- Weather Dictionary --------------------------');
-  // TODO: SC #2
-  Console.Writeln('');
-end;
-
-{ Spring Base Demos }
-
-procedure TFormDemoMain.btnRunTEnumDemoClick(Sender: TObject);
-begin
-  Console.Writeln('--- Spring TEnum<> ------------------------------');
-  // TODO: SB #1
-  Console.Writeln('');
-end;
-
-procedure TFormDemoMain.btnNullableDemoClick(Sender: TObject);
-begin
-  Console.Writeln('--- Spring Nullable<> ---------------------------');
-  // TODO: SB #2
+  TSpringCollectionsDemo.RunEmployeeCollection(Console);
   Console.Writeln('');
 end;
 
 procedure TFormDemoMain.btnDemoLazyVariableClick(Sender: TObject);
 begin
   Console.Writeln('--- Spring ILazy<> ------------------------------');
-  // TODO: SB #3
+  TSpringBaseDemo.RunLazyVariableDemo(Console);
+  Console.Writeln('');
+end;
+
+procedure TFormDemoMain.btnDemoThreadedQueueClick(Sender: TObject);
+begin
+  TFormQueue.Create(Self).Show;
+end;
+
+procedure TFormDemoMain.btnDemoSuperObjectClick(Sender: TObject);
+begin
+  Console.Writeln('--- Super Object --------------------------------');
+  TGenericsDemo.RunSuperObject(Console);
+  Console.Writeln('');
+end;
+
+procedure TFormDemoMain.btnDemoObjectContainerClick(Sender: TObject);
+begin
+  Console.Writeln('--- Object Container ----------------------------');
+  TGenericsDemo.RunObjectContainer(Console, Self);
+  Console.Writeln('');
+end;
+
+procedure TFormDemoMain.btnDemoWeatherDictionaryClick(Sender: TObject);
+begin
+  Console.Writeln('--- Weather Dictionary --------------------------');
+  TSpringCollectionsDemo.RunWeatherDictionary(Console);
+  Console.Writeln('');
+end;
+
+procedure TFormDemoMain.btnNullableDemoClick(Sender: TObject);
+begin
+  Console.Writeln('--- Spring Nullable<> ---------------------------');
+  TSpringBaseDemo.RunNullableDemo(Console);
+  Console.Writeln('');
+end;
+
+procedure TFormDemoMain.btnRunTEnumDemoClick(Sender: TObject);
+begin
+  Console.Writeln('--- Spring TEnum<> ------------------------------');
+  TSpringBaseDemo.RunTEnumDemo(Console);
   Console.Writeln('');
 end;
 
 procedure TFormDemoMain.btnTupleDemoClick(Sender: TObject);
 begin
-  Console.Writeln('--- Spring Tuple<> ----------------------------');
-  // TODO: SB #4
+  Console.Writeln('--- Spring Tupple<> ----------------------------');
+  TSpringBaseDemo.RunTuppleDemo(Console);
   Console.Writeln('');
 end;
 
