@@ -1,0 +1,635 @@
+﻿uses
+  System.SysUtils,
+  System.Classes,
+  System.Generics.Collections,
+  {-}
+  DemoHelper;
+
+  Datasnap.DBClient,
+  Data.DB,
+
+  Spring,
+  Spring.Collections,
+
+
+________________________________________________________________
+
+Generic Type Demos
+________________________________________________________________
+
+
+uses
+  superobject;
+
+type
+  TData = record
+    str: string;
+    int: Integer;
+    bool: Boolean;
+    flt: Double;
+  end;
+
+
+class procedure TGenericsDemo.RunSuperObject(const aConsole: IConsole);
+var
+  ctx: TSuperRttiContext;
+  data: TData;
+  superObj: ISuperObject;
+  jsonText: string;
+begin
+  ctx := TSuperRttiContext.Create;
+  try
+    superObj := SO('[{str: "foo", int: 123, bool: true, flt: 1.23}]');
+    data := ctx.AsType<TData>(superObj.AsArray.N[0]);
+    jsonText := ctx.AsJson<TData>(data).AsString;
+  finally
+    ctx.Free;
+  end;
+  aConsole.Writeln('  item[%d] = (str=%s int=%d bool=%s flt=%f)',
+    [superObj.AsArray.Length, data.str, data.int, BoolToStr(data.bool, true),
+    data.flt]);
+  aConsole.Writeln('  ctx.AsJson<TData>(data).AsString = ' + jsonText);
+end;
+
+
+
+________________
+
+
+type
+  TObjectContainer<T: class, constructor> = class(TComponent)
+  strict private
+    fObj: T;
+  public
+    property Obj: T read fObj;
+    constructor Create(aOwner: TComponent); override;
+    destructor Destroy; override;
+  end;
+
+
+constructor TObjectContainer<T>.Create(aOwner: TComponent);
+begin
+  inherited;
+  fObj := T.Create();
+end;
+
+
+destructor TObjectContainer<T>.Destroy;
+begin
+  fObj.Free;
+  inherited;
+end;
+
+
+class procedure TGenericsDemo.RunObjectContainer(
+  const aConsole: IConsole;
+  const aOwner: TComponent);
+var
+  container: TObjectContainer<TStringList>;
+begin
+  container := TObjectContainer<TStringList>.Create(aOwner);
+  container.Obj.Add('3. three');
+  container.Obj.Add('1. one');
+  container.Obj.Insert(0, '2. two');
+  container.Obj.Sort;
+  aConsole.Writeln('  container.Obj.CommaText = ' + container.Obj.CommaText);
+end;
+
+
+
+________________________________________________________________
+
+Anonymous Methods Demos
+________________________________________________________________
+
+class procedure TAnonymousDemo.RunAnonymousThread(const aConsole: IConsole);
+begin
+  TThread.CreateAnonymousThread(
+    procedure
+    var
+      Data: string;
+    begin
+      Sleep(500);
+      Data := 'From the Thread';
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          aConsole.Writeln('  Data: ' + Data);
+        end);
+    end).Start;
+  aConsole.Writeln('  Thread started');
+  aConsole.Writeln('  ...');
+end;
+
+
+________________
+
+
+class procedure TAnonymousDemo.RunDataSetForEach(
+  const aConsole: IConsole;
+  const aOwner: TComponent);
+var
+  trips: TArray<string>;
+  dataset: TDataSet;
+  count: Integer;
+  rankSum: Extended;
+begin
+  dataset := TDatasetBuilder.CreatePlaces(aOwner, [
+  { } [1, 'Edinburgh', 5.5, EncodeDate(2018, 05, 28)],
+  { } [2, 'Glassgow', 4.1, EncodeDate(2015, 09, 13)],
+  { } [3, 'Cracow', 5.8, EncodeDate(2019, 01, 01)],
+  { } [4, 'Prague', 4.7, EncodeDate(2013, 06, 21)],
+  { } [5, 'Venzia']]);
+  count := 0;
+  rankSum := 0;
+  DatasetForEachRow(dataset,
+    procedure(aIdx: Integer)
+    begin
+      if dataset.FieldByName('visited').IsNull then
+        exit;
+      trips := trips + ['"' + FormatDateTime('yyyy-mm',
+        dataset.FieldByName('visited').AsDateTime) + '"'];
+      inc(count);
+      rankSum := rankSum + dataset.FieldByName('rank').AsExtended;
+    end);
+  aConsole.Writeln('  {"trips": [%s]}', [String.Join(', ', trips)]);
+  if count > 0 then
+    aConsole.Writeln('  Average Rank = %.2f', [rankSum / count]);
+end;
+
+
+________________
+
+
+{ TDatasetBuilder }
+
+
+type
+  TVariantArray = array of Variant;
+
+
+  TDatasetBuilder = class
+    class function CreatePlaces(
+      fOwner: TComponent;
+      const Data: TArray<TVariantArray>): TDataSet;
+  end;
+
+
+class function TDatasetBuilder.CreatePlaces(
+  fOwner: TComponent;
+  const Data: TArray<TVariantArray>): TDataSet;
+var
+  dataset: TClientDataSet;
+  idx: Integer;
+  j: Integer;
+begin
+  dataset := TClientDataSet.Create(fOwner);
+  with dataset do
+  begin
+    FieldDefs.Add('id', ftInteger);
+    FieldDefs.Add('city', ftWideString, 30);
+    FieldDefs.Add('rank', ftFloat);
+    FieldDefs.Add('visited', ftDateTime);
+    FieldDefs[0].Required := True;
+    FieldDefs[1].Required := True;
+    CreateDataSet;
+    FieldByName('id').ProviderFlags := [pfInKey, pfInWhere, pfInUpdate]
+  end;
+  for idx := 0 to High(Data) do
+  begin
+    dataset.Append;
+    for j := 0 to High(Data[idx]) do
+      dataset.Fields[j].Value := Data[idx][j];
+    dataset.Post;
+  end;
+  dataset.First;
+  Result := dataset;
+end;
+
+________________
+
+
+{ DatasetForEachRow }
+
+
+procedure DatasetForEachRow(
+  const aDataset: TDataSet;
+  const aActionProc: TProc<Integer>);
+var
+  Bookmark: TBookmark;
+  idx: Integer;
+begin
+  Bookmark := aDataset.GetBookmark;
+  aDataset.DisableControls;
+  try
+    aDataset.First;
+    idx := 0;
+    while not aDataset.Eof do
+    begin
+      aActionProc(idx);
+      aDataset.Next;
+      inc(idx);
+    end;
+  finally
+    if aDataset.BookmarkValid(Bookmark) then
+      aDataset.GotoBookmark(Bookmark);
+    aDataset.FreeBookmark(Bookmark);
+    aDataset.EnableControls;
+  end;
+end;
+
+
+
+________________________________________________________________
+
+Spring4D Collections Demos
+________________________________________________________________
+
+
+function CompareCurrency(const aLeft, aRight: currency): integer;
+begin
+  if (aLeft < aRight) then
+    Result := -1
+  else if (aLeft > aRight) then
+    Result := 1
+  else
+    Result := 0;
+end;
+
+
+class procedure TSpringCollectionsDemo.RunEmployeeCollection(const aConsole
+  : IConsole);
+var
+  employees: IList<TEmployee>;
+  emp: TEmployee;
+begin
+  employees := TCollections.CreateList<TEmployee>(True);
+  employees.Add(TEmployee.Create('Jan Kowalski', 9800));
+  employees.Add(TEmployee.Create('Tomasz Jankowski', 6300));
+  employees.Add(TEmployee.Create('Ewa Tomaszewska', 8500));
+  employees.Sort(
+    function(const e1, e2: TEmployee): integer
+    begin
+      Result := CompareCurrency(e1.Salary, e2.Salary);
+    end);
+  for emp in employees do
+    aConsole.Writeln('  %s %s : %f', [emp.FirstName, emp.LastName, emp.Salary]);
+end;
+
+
+
+________________
+
+
+class procedure TSpringCollectionsDemo.RunWeatherDictionary(const aConsole
+  : IConsole);
+{ - }
+  function GetLocation(const Location: string): IShared<TWeather>;
+  begin
+    if not fLoadedWeathers.ContainsKey(Location) then
+    begin
+      fLoadedWeathers.Add(Location, TWeatherGenerator.GetWeather(Location));
+    end;
+    Result := fLoadedWeathers[Location];
+  end;
+
+
+var
+  warsaw: string;
+  berlin: string;
+begin
+  fLoadedWeathers := TCollections.CreateDictionary<string, IShared<TWeather>>;
+  warsaw := GetLocation('poland/warsaw').ToText;
+  berlin := GetLocation('germany/berlin').ToText;
+  aConsole.Writeln('[poland/warsaw]  '+warsaw);
+  aConsole.Writeln('[germany/berlin]  '+berlin);
+end;
+
+
+________________
+
+{ TEmployee }
+
+
+type
+  TEmployee = class
+    FirstName: string;
+    LastName: string;
+    Salary: double;
+    constructor Create(
+      const aName: string;
+      aSalary: double);
+  end;
+
+
+constructor TEmployee.Create(
+  const aName: string;
+  aSalary: double);
+var
+  nameArray: TArray<string>;
+begin
+  nameArray := aName.Split([' ']);
+  FirstName := nameArray[0];
+  LastName := nameArray[1];
+  Salary := aSalary;
+end;
+
+
+________________
+
+
+{ TWeather }
+
+
+type
+  TWeather = class
+    Location: string;
+    Teperature: integer; { -50°C .. 50°C }
+    RealFeelTeperature: integer; { -50°C .. 50°C }
+    // MaxUvIndex: integer; { 0 .. 11+ }
+    WindDirection: string; { N E S W, NE, SE, SW, NW }
+    WindSpeed: integer; { km/h }
+    Humidity: integer; {%}
+    CloudCover: integer; {%}
+    Pressure: integer; { mb / hPa }
+    Visibility: integer; { km }
+    CloudCeiling: integer; { m }
+    function ToText: string;
+  end;
+
+
+function TWeather.ToText: string;
+begin
+  Result := Format('Teperature: %d°C, RealFeelTeperature: %d°C, ' +
+    'WindDirection: %s, WindSpeed: %d km/h, Humidity: %d%%, ' +
+    'CloudCover %d%%, Pressure %d hPa, Visibility: %d km, ' +
+    'CloudCeiling: %d m',
+    { } [Teperature, RealFeelTeperature, WindDirection, WindSpeed,
+    { } Humidity, CloudCover, Pressure, Visibility, CloudCeiling]);
+end;
+
+________________
+
+
+{ TWeatherGenerator }
+
+
+type
+  TWeatherGenerator = class
+  strict private
+    class function BuildWeather(
+      const aLocation: string;
+      const data: TArray<Variant>): Shared<TWeather>;
+    class function BuildRandomWeather(const aLocation: string)
+      : Shared<TWeather>;
+  public
+    class function GetWeather(const aLocation: string): IShared<TWeather>;
+  end;
+
+
+class function TWeatherGenerator.BuildWeather(
+  const aLocation: string;
+  const data: TArray<Variant>): Shared<TWeather>;
+begin
+  Result := TWeather.Create;
+  with Result.Value do
+  begin
+    Location := aLocation;
+    Teperature := data[0];
+    RealFeelTeperature := data[1];
+    WindDirection := data[2];
+    WindSpeed := data[3];
+    Humidity := data[4];
+    CloudCover := data[5];
+    Pressure := data[6];
+    Visibility := data[7];
+    CloudCeiling := data[8];
+  end;
+end;
+
+
+function RandomFromArray(const aValues: TArray<string>): string;
+begin
+  Result := aValues[Random(Length(aValues))];
+end;
+
+
+class function TWeatherGenerator.BuildRandomWeather(const aLocation: string)
+  : Shared<TWeather>;
+begin
+  Result := TWeather.Create;
+  with Result.Value do
+  begin
+    Location := aLocation;
+    Teperature := Random(42) - 10;
+    RealFeelTeperature := Teperature + Random(5) - 4;
+    // MaxUvIndex := Random(8);
+    WindDirection := RandomFromArray(['N', 'E', 'S', 'W', 'NE', 'SE', 'SW',
+      'NW', 'NNE', 'NNW', 'ESE', 'SSW']);
+    WindSpeed := Random(100);
+    Humidity := 60 + Random(41);
+    CloudCover := Random(101);
+    Pressure := 980 + Random(46);
+    Visibility := 5 + Random(20);
+    CloudCeiling := 300 + Random(4000);
+  end;
+end;
+
+
+class function TWeatherGenerator.GetWeather(const aLocation: string)
+  : IShared<TWeather>;
+begin
+  if aLocation = 'poland/warsaw' then
+    Result := BuildWeather(aLocation, [3 { °C } , -1 { °C } , 'SW',
+      13 { km/h } , 86 { Humidity:% } , 91, 1003 { Pressure : hPa } ,
+      16 { Visibility : km } , 1000 { CloudCeiling : m } ])
+  else if aLocation = 'germany/berlin' then
+    Result := BuildWeather(aLocation, [4 { °C } , -4 { °C } , 'WNW',
+      52 { km/h } , 82 { Humidity:% } , 95, 1012 { Pressure : hPa } ,
+      16 { Visibility : km } , 600 { CloudCeiling : m } ])
+  else if aLocation = 'uk/edinburgh' then
+    Result := BuildWeather(aLocation, [10 { °C } , 3 { °C } , 'WSW',
+      52 { km/h } , 88 { Humidity:% } , 100, 1015 { Pressure : hPa } ,
+      10 { Visibility : km } , 500 { CloudCeiling : m } ])
+  else if aLocation = 'australia/sydney' then
+    Result := BuildWeather(aLocation, [27 { °C } , 28 { °C } , 'E',
+      30 { km/h } , 71 { Humidity:% } , 37, 991 { Pressure : hPa } ,
+      16 { Visibility : km } , 6000 { CloudCeiling : m } ])
+  else if aLocation = 'usa/san-francisco' then
+    Result := BuildWeather(aLocation, [14 { °C } , 14 { °C } , 'NE',
+      11 { km/h } , 69 { Humidity:% } , 18, 1023 { Pressure : hPa } ,
+      19 { Visibility : km } , 12200 { CloudCeiling : m } ])
+  else
+    Result := BuildRandomWeather(aLocation);
+end;
+
+
+
+
+________________________________________________________________
+
+Spring4D Base Demos
+________________________________________________________________
+
+
+class procedure TSpringBaseDemo.RunTEnumDemo(aConsole: IConsole);
+type
+  TNumberEnum = (One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten);
+var
+  names: TStringDynArray;
+  values: TIntegerDynArray;
+  number: TNumberEnum;
+  sevenText: string;
+begin
+  names := TEnum.GetNames<TNumberEnum>;
+  values := TEnum.GetValues<TNumberEnum>;
+  number := TEnum.Parse<TNumberEnum>('Seven');
+  sevenText := TEnum.GetName<TNumberEnum>(number);
+  // -
+  aConsole.Writeln('  TEnum.GetNames<TNumberEnum>: [%s]',
+    [string.Join(', ', names)]);
+  aConsole.Writeln('  TEnum.GetValues<TNumberEnum>: [%s]',
+    [IntsToStr(', ', values)]);
+  aConsole.Writeln('  TEnum.Parse<TNumberEnum>(Seven)' +
+  { } IfThen(number = Seven, ' = ', ' ≠ ') + sevenText);
+end;
+
+
+
+________________
+
+
+class procedure TSpringBaseDemo.RunNullableDemo(aConsole: IConsole);
+var
+  date: Nullable<TDateTime>;
+begin
+  if date.hasValue then
+    aConsole.Writeln('  date = ' + DateToStr(date.Value))
+  else
+    aConsole.Writeln('  date is null');
+  date := EncodeDate(2023, 01, 15);
+  aConsole.Writeln('  date = ' + DateToStr(date));
+  date := nil;
+  aConsole.Writeln('  date %s', [IfThen(date.hasValue, 'is not null',
+    'is null')]);
+  // date.Value - should throw EInvalidOperationException
+end;
+
+
+________________
+
+
+function IntsToStr(
+  const aSeparator: string;
+  const aInts: TArray<integer>): string;
+var
+  idx: integer;
+begin
+  for idx := 0 to Length(aInts) - 1 do
+    Result := Result + IfThen(Result = '', '', aSeparator) + aInts[idx]
+      .toString;
+end;
+
+
+________________
+
+
+class procedure TSpringBaseDemo.RunLazyVariableDemo(aConsole: IConsole);
+var
+  balanceOf1: ILazy<Currency>;
+  balanceOf2: ILazy<Currency>;
+  value1: Currency;
+  value2: Currency;
+begin
+  DataModule1 := TDataModule1.Create;
+  DataModule1.OnCalculateBalance := procedure
+    begin
+      aConsole.Writeln('  Balance calculator was called');
+    end;
+  // - get lazy vaules
+  balanceOf1 := DataModule1.BalanceFor(1);
+  balanceOf2 := DataModule1.BalanceFor(2);
+  aConsole.Writeln('  Lazy variables was created');
+  // - use lazy values (in another part of codebase)
+  value1 := balanceOf1.Value;
+  value2 := balanceOf2.Value;
+  aConsole.Writeln('  Balanace of CustomerId=1 is %f', [value1]);
+  aConsole.Writeln('  Balanace of CustomerId=2 is %f', [value2]);
+  // -
+  DataModule1.Free;
+end;
+
+
+________________
+
+
+{ TDataModule1 }
+
+
+type
+  TDataModule1 = class
+  strict private
+    function GetBalanceOfAccountId(aAccoutId: integer): Currency;
+  public
+    OnCalculateBalance: TProc;
+    function BalanceFor(id: integer): ILazy<Currency>;
+  end;
+
+
+function TDataModule1.GetBalanceOfAccountId(aAccoutId: integer): Currency;
+begin
+  if Assigned(OnCalculateBalance) then
+    OnCalculateBalance();
+  case aAccoutId of
+    1:
+      Result := 12034.00;
+    2:
+      Result := 29001.00
+  else
+    Result := 9500.00;
+  end;
+end;
+
+
+function TDataModule1.BalanceFor(id: integer): ILazy<Currency>;
+var
+  dm: TDataModule1;
+begin
+  dm := Self;
+  Result := TLazy<Currency>.Create(
+    function: Currency
+    begin
+      Result := Self.GetBalanceOfAccountId(id);
+    end);
+end;
+
+
+var
+  DataModule1: TDataModule1;
+
+
+________________
+
+
+class procedure TSpringBaseDemo.RunTupleDemo(aConsole: IConsole);
+var
+  pair1: Tuple<integer, string>;
+  pair2: Tuple<integer, string>;
+  employee: Tuple<integer, string, Currency, TDateTime>;
+  empId: integer;
+  empName: string;
+  empSalary: Currency;
+  empHireDate: TDateTime;
+begin
+  pair1 := Tuple<integer, string>.Create(43, 'Jan Kowalski');
+  pair2 := [41, 'Adam'];
+  employee := [21, 'Paweł Branko', 8500, EncodeDate(2017, 06, 01)];
+  employee.Unpack(empId, empName, empSalary, empHireDate);
+  // -
+  aConsole.Writeln('  (%d, %s) ', [pair1.value1, pair1.value2]);
+  aConsole.Writeln('  pair1' + IfThen(pair1.Equals(pair2), ' = ', ' ≠ ')
+    + 'pair2');
+  aConsole.Writeln('  Unpacked employee: (%d, %s, %f, %s)',
+    [empId, empName, empSalary, DateToStr(empHireDate)]);
+end;
+
