@@ -1,34 +1,30 @@
-﻿# Dobre praktyki programowania
+# Dobre praktyki programowania
 
 ## 1. Praca zespołowa
 
-* Zostawiajcie ślad po tym co zrobiliście
-	* Wspólne repozytorium
-	* Przy całodziennym kodowaniu - min. 10 rewizji (commit-ów)
+* Zostań Git-owcem
+	* Płynne używanie Git-a jest w dzisiejszych czasach kluczową umiejętnością każdego programisty
+	* Testuj swoje umiejętności na lokalnym repozytorium, można je skasować i skolonować od nowa
+	* Szukaj rewelacyjnych kursów w Internecie oraz korzystaj z serwisu `StackOverflow`, `ChatGPT`, etc.
+* Nowoczesna praca z Git-em
+	* Wspólne repozytorium - monorepro - https://semaphoreci.com/blog/what-is-monorepo
+	* Zmiany tylko w krótko trwałych branch-ach roboczych - feature branches - https://www.linkedin.com/pulse/best-practices-managing-feature-branches-derek-ashmore/
+	* Historia liniowa - squash merge - https://learn.microsoft.com/en-us/azure/devops/repos/git/merging-with-squash
+	* Aktualizualizuj gałąź roboczą korzystając z poleceania `git rebase` - https://www.atlassian.com/git/tutorials/merging-vs-rebasing
+	* Skorzystaj z narzędzi do roztrzygania konfiktów - https://code.visualstudio.com/docs/sourcecontrol/overview
+* Przeglądy kodu źródłowego
+        * Używaj TODO i komentarzy ostrożnie: Wpisuj -> Czyść -> Nie śmieć
+        * Pisz czytelny i samo komentujący się kod - Cean Code by Uncle Ben
+	* Asynchronicznie on-line
+        * Sprawdź pracę parami przy trudniejszych tematach
+	* `Pair Programming` - jedno z wymagań metodyki XP
 * Organizujcie zespół programistyczny i planujcie wspólną pracę
-	* Wewnętrzny system działu programistycznego
-	* `GitHub`, `GitLab`, `Jira` etc.
+	* Narzędzi: `Azure DevOps`, `Jira`, `GitHub`, `GitLab` etc.
+	* Scrum lub Kanban
 	* Co potrzebujecie:
 		* `Backlog`, Tablica (`Board`), `Release-y`, `Issues`, Dyskusje, CI (`Continuous Integration`)
 		* Niezależność od marketingu, sprzedaży, zarządu i działu wsparcia klienta
-	* Systemy rejestracji błędów nie nadają się do tego celu
-		* `Bugzilla`, `Mantis`, itp.
-	* Systemy helpdesk-owe nie nadają się to tego celu
-		* `Zendesk`, `Freshdesk`, `ZOHO desk`, `Jira Service Desk`, itd.
-* Zostań Git-owcem
-	* Płynne używanie Git-a jest w dzisiejszych czasach kluczową umiejętnością każdego programisty
-	* Testuj swoje umiejętności na lokalnym repozytorium i na symulatorach Git-a
-	* Szukaj rewelacyjnych kursów w Internecie
-	* Naucz się rozwiązywać problemy korzystając z serwisu `StackOverflow`
-* Używaj TODO
-	* Wpisuj
-	* Czyść - zaimplementuj lub usuwaj
-	* Nie śmieć
-* Przeglądy kodu źródłowego
-	* Na początek "na żywo" - spotkanie w jednej sali
-	* Docelowo off-line
-* Sprawdź pracę parami przy trudniejszych tematach
-	* `Pair Programming` - jedno z wymagań metodyki XP
+	* Nie nadają się do tego celu Systemy Rejestracji Błędów: `Bugzilla`, `Mantis`, itp.
 
 ## 2. Nie powtarzaj się
 
